@@ -2,8 +2,10 @@ const addUserBtn = document.getElementById('addUser');
 const btnText = addUserBtn.innerText;
 const usernameTextField = document.getElementById('username');
 const recordsDisplay = document.getElementById('records');
+const completedFilter = document.getElementById('completedFilter');
+const nonCompletedFilter = document.getElementById('nonCompletedFilter');
 let userArray = [];
-let edit_id = null;
+let editId = null;
 
 let objStr = localStorage.getItem('users');
 
@@ -11,16 +13,16 @@ if (objStr != null) {
    userArray = JSON.parse(objStr);
 }
 
-DisplayInfo();
+displayInfo();
 addUserBtn.onclick = () => {
    //get user's name from text field
    const name = usernameTextField.value;
-   if (edit_id != null) {
+   if (editId != null) {
       //edit action
-      userArray.splice(edit_id, 1, {
+      userArray.splice(editId, 1, {
          'name': name
       });
-      edit_id = null;
+      editId = null;
    } else {
       //insert action
       userArray.push({
@@ -28,41 +30,44 @@ addUserBtn.onclick = () => {
       });
    }
 
-   SaveInfo(userArray);
+   saveInfo(userArray);
    usernameTextField.value = '';
    addUserBtn.innerText = btnText;
 }
 
 // store user's name in local storage
-function SaveInfo(userArray) {
+function saveInfo(userArray) {
    let str = JSON.stringify(userArray);
    localStorage.setItem('users', str);
-   DisplayInfo();
+   displayInfo();
 }
- 
+
 // display user's name
-function DisplayInfo() {
+function displayInfo() {
    let statement = '';
+   const completed = completedFilter.checked;
+   const nonCompleted = nonCompletedFilter.checked;
    userArray.forEach((user, i) => {
-      statement += `<tr>
-           <th scope="row">${i+1}</th>
-           <td>${user.name}</td>
-           <td><i class="btn text-white fa fa-edit btn-info mx-2" onclick='EditInfo(${i})'></i> <i class="btn btn-danger text-white fa fa-trash" onclick='DeleteInfo(${i})'></i></td>
-         </tr>`;
+      if ((completed && user.completed) || (nonCompleted && !user.completed) || (!completed && !nonCompleted)) {
+         statement += `<tr>
+             <th scope="row">${i + 1}</th>
+             <td>${user.name}</td>
+             <td><i class="btn text-white fa fa-edit btn-info mx-2" onclick='editInfo(${i})'></i> <i class="btn btn-danger text-white fa fa-trash" onclick='deleteInfo(${i})'></i></td>
+           </tr>`;
+      }
    });
    recordsDisplay.innerHTML = statement;
 }
 
 // edit user's name
-function EditInfo(id) {
-   edit_id = id;
+function editInfo(id) {
+   editId = id;
    usernameTextField.value = userArray[id].name;
    addUserBtn.innerText = 'Save Changes';
 }
 
 //delete user's name
-function DeleteInfo(id) {
+function deleteInfo(id) {
    userArray.splice(id, 1);
-   SaveInfo(userArray);
-
+   saveInfo(userArray);
 }
